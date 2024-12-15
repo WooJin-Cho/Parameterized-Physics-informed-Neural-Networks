@@ -61,10 +61,7 @@ def main():
     ## START Training ##
     for EPOCH in range(epoch):
         net.train()
-
-        loss_saver_f = 0
-        loss_saver_u = 0
-        loss_saver_bd = 0
+        cost_f, cost_u, cost_gt, cost_bd = 0, 0, 0, 0
 
         # Collocation Condition
         for samples_f in f_dataloader:
@@ -82,9 +79,8 @@ def main():
             all_zeros = Variable(torch.from_numpy(all_zeros).float(), requires_grad=False).to(device)
 
             pde_output_f = PDE_cal(eq_f, x_f, t_f, beta_f, nu_f, rho_f, net)
-
-            cost_f = mse_cost_function(pde_output_f, all_zeros)
-            loss_saver_f += cost_f.item()
+            
+            cost_f += mse_cost_function(pde_output_f, all_zeros)
 
         # Initial Condition
         for samples_u in u_dataloader:
@@ -105,12 +101,9 @@ def main():
             all_zeros = Variable(torch.from_numpy(all_zeros).float(), requires_grad=False).to(device)
 
             pde_output_u = PDE_cal(eq_u, x_u, t_u, beta_u, nu_u, rho_u, net)
-            cost_u = mse_cost_function(pde_output_u, all_zeros)
-            cost_gt = mse_cost_function(u_u, u_pred_u)
-
-            loss_saver_u += cost_u.item()
-            loss_saver_u += cost_gt.item()
-
+            cost_u += mse_cost_function(pde_output_u, all_zeros)
+            cost_gt += mse_cost_function(u_u, u_pred_u)
+            
         for samples_bd in bd_dataloader:
 
             x_data_lb, t_data_lb, x_data_ub, t_data_ub, beta_bd, nu_bd, rho_bd, eq_bd = samples_bd
@@ -127,9 +120,8 @@ def main():
 
             u_pred_lb = net(eq_bd, x_data_lb, t_data_lb)
             u_pred_ub = net(eq_bd, x_data_ub, t_data_ub)
-
-            cost_bd   = torch.mean((u_pred_lb - u_pred_ub) ** 2)
-            loss_saver_bd += cost_bd.item()
+            
+            cost_bd += torch.mean((u_pred_lb - u_pred_ub) ** 2)
             
         cost_total = cost_f + cost_u + cost_gt + cost_bd
             
@@ -186,11 +178,11 @@ def main():
             print('Max_error :', Max_err)
             print('Variance_score :', Ex_var_score)                 
                 
-        train_loss = (loss_saver_f) + (loss_saver_u) + (loss_saver_bd)
+        train_loss = cost_f.item() + cost_u.item() + cost_gt.item() + cost_bd.item()
 
         print('Epoch number :', EPOCH)
         print('Training_loss :', train_loss)
-        print('loss f, loss_u, loss_bd :', loss_saver_f, loss_saver_u, loss_saver_bd)
+        print('loss f, loss_u, loss_bd :', cost_f.item(), cost_u.item() + cost_gt.item(), cost_bd.item())
         print('=================================================================')        
 
         if (EPOCH+1) % 50 == 0:
@@ -203,5 +195,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

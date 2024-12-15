@@ -1,14 +1,11 @@
 import argparse
 import numpy as np
 import os
-import random
 import torch
 from systems import *
-import torch.backends.cudnn as cudnn
 from utils import *
-import matplotlib.pyplot as plt
-import pdb
 import pandas as pd
+
 
 
 parser = argparse.ArgumentParser()
@@ -33,6 +30,10 @@ if torch.cuda.is_available():
     device = torch.device('cuda')
 else:
     device = torch.device('cpu')
+
+os.makedirs('./dataset/cdr/train', exist_ok=True)
+os.makedirs('./dataset/cdr/val', exist_ok=True)
+os.makedirs('./dataset/cdr/test', exist_ok=True)
 
 
 rho=0

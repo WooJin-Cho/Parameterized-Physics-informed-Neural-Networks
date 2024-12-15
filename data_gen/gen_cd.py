@@ -1,14 +1,11 @@
 import argparse
 import numpy as np
 import os
-import random
 import torch
 from systems import *
-import torch.backends.cudnn as cudnn
 from utils import *
-import matplotlib.pyplot as plt
-import pdb
 import pandas as pd
+
 
 
 parser = argparse.ArgumentParser()
@@ -40,6 +37,9 @@ rho=0
 nu=0
 beta=0
 
+os.makedirs('./dataset/cd/train', exist_ok=True)
+os.makedirs('./dataset/cd/val', exist_ok=True)
+os.makedirs('./dataset/cd/test', exist_ok=True)
 
 for i in range(41):
     nu = 0
